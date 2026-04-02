@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>🎲 随机惩罚游戏</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: "Microsoft YaHei", sans-serif;
+    }
+
+    body {
+      min-height: 100vh;
+      background: linear-gradient(135deg, #1e1e2f, #3a3a5a);
+      color: #fff;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+    }
+
+    .container {
+      background: rgba(255, 255, 255, 0.08);
+      backdrop-filter: blur(10px);
+      border-radius: 20px;
+      padding: 35px;
+      width: 100%;
+      max-width: 500px;
+      text-align: center;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    h1 {
+      font-size: 26px;
+      margin-bottom: 10px;
+      color: #ffdf6b;
+    }
+
+    .subtitle {
+      color: #ccc;
+      margin-bottom: 30px;
+      font-size: 14px;
+    }
+
+    .result-box {
+      min-height: 120px;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 15px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      margin-bottom: 25px;
+      font-size: 20px;
+      font-weight: bold;
+      color: #fff;
+      transition: all 0.3s;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .result-box.shake {
+      animation: shake 0.5s;
+    }
+
+    @keyframes shake {
+      0%,100%{transform:translateX(0);}
+      25%{transform:translateX(-6px);}
+      50%{transform:translateX(6px);}
+      75%{transform:translateX(-6px);}
+    }
+
+    .btn {
+      padding: 14px 30px;
+      border: none;
+      border-radius: 50px;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: all 0.3s;
+      margin: 8px;
+    }
+
+    .btn-primary {
+      background: #ff4757;
+      color: #fff;
+    }
+
+    .btn-primary:hover {
+      background: #ff3742;
+      transform: translateY(-3px);
+    }
+
+    .btn-secondary {
+      background: #5352ed;
+      color: #fff;
+    }
+
+    .btn-secondary:hover {
+      background: #4645d4;
+      transform: translateY(-3px);
+    }
+
+    .history {
+      margin-top: 25px;
+      text-align: left;
+    }
+
+    .history h3 {
+      font-size: 16px;
+      margin-bottom: 10px;
+      color: #ffdf6b;
+    }
+
+    .history-list {
+      max-height: 180px;
+      overflow-y: auto;
+      padding-right: 5px;
+    }
+
+    .history-item {
+      background: rgba(255, 255, 255, 0.05);
+      padding: 8px 12px;
+      border-radius: 8px;
+      margin-bottom: 6px;
+      font-size: 14px;
+    }
+
+    /* 滚动条美化 */
+    ::-webkit-scrollbar {width:6px;}
+    ::-webkit-scrollbar-thumb {background:#888;border-radius:3px;}
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <h1>🎲 随机惩罚游戏</h1>
+    <p class="subtitle">聚会 / 团建 / 真心话大冒险 必备</p>
+
+    <div class="result-box" id="result">点击下方按钮开始抽取</div>
+
+    <button class="btn btn-primary" id="drawBtn">🎯 随机抽取惩罚</button>
+    <button class="btn btn-secondary" id="clearBtn">🧹 清空历史记录</button>
+
+    <div class="history">
+      <h3>📜 已抽取惩罚记录</h3>
+      <div class="history-list" id="historyList"></div>
+    </div>
+  </div>
+
+  <script>
+    // 惩罚清单（可自由增删改）
+    const punishments = [
+      "做10个深蹲",
+      "唱一句最跑调的歌",
+      "模仿猫咪叫10秒",
+      "夸在场每个人一句",
+      "原地转5圈然后走直线",
+      "用方言读绕口令",
+      "做一个鬼脸保持5秒",
+      "给朋友发一条土味情话",
+      "跳一段搞怪舞蹈",
+      "学大猩猩走路",
+      "大声说出自己的小秘密",
+      "背一首小学古诗",
+      "模仿机器人说话",
+      "连续打三个喷嚏（演的）",
+      "用嘴唇碰鼻子3秒",
+      "对墙壁深情表白",
+      "做20个开合跳",
+      "用娃娃音自我介绍",
+      "模仿网红带货台词",
+      "闭上眼睛单脚站立10秒"
+    ];
+
+    const resultBox = document.getElementById("result");
+    const drawBtn = document.getElementById("drawBtn");
+    const clearBtn = document.getElementById("clearBtn");
+    const historyList = document.getElementById("historyList");
+    let history = [];
+
+    // 抽取惩罚
+    function drawPunishment() {
+      // 震动动画
+      resultBox.classList.add("shake");
+      setTimeout(() => resultBox.classList.remove("shake"), 500);
+
+      // 随机选择
+      const random = Math.floor(Math.random() * punishments.length);
+      const res = punishments[random];
+      resultBox.innerText = "✅ 惩罚任务：" + res;
+
+      // 加入历史
+      history.unshift(res);
+      renderHistory();
+    }
+
+    // 渲染历史
+    function renderHistory() {
+      historyList.innerHTML = "";
+      history.forEach((item, i) => {
+        const div = document.createElement("div");
+        div.className = "history-item";
+        div.innerText = `${i + 1}. ${item}`;
+        historyList.appendChild(div);
+      });
+    }
+
+    // 清空历史
+    function clearHistory() {
+      history = [];
+      historyList.innerHTML = "";
+      resultBox.innerText = "点击下方按钮开始抽取";
+    }
+
+    // 绑定事件
+    drawBtn.addEventListener("click", drawPunishment);
+    clearBtn.addEventListener("click", clearHistory);
+  </script>
+</body>
+</html>
